@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html class="wide wow-animation" lang="en">
+
+<head>
+  <title>Cheerful Meal</title>
+  <meta name="format-detection" content="telephone=no">
+  <meta name="viewport"
+    content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="utf-8">
+  <link rel="icon" href="images/logo_rm.png" type="image/x-icon">
+  <!-- Stylesheets-->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Poppins:300,400,500">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Update existing modal styles */
+    .food-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      position: relative;
+      background: white;
+      width: 90%;
+      max-width: 800px;
+      margin: 80px auto;
+      /* Increased top margin */
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    /* Table styles */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-table th,
+    .info-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-table thead th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #2d3748;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .info-table tbody tr {
+      transition: background-color 0.3s ease;
+    }
+
+    .info-table tbody tr:hover {
+      background-color: #f7fafc;
+    }
+
+    /* Nutrition specific styles */
+    .nutrition-header {
+      color: #4a5568;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #e6ffed;
+      border-radius: 8px;
+      border-left: 4px solid #48bb78;
+    }
+
+    /* Recipe specific styles */
+    .recipe-title {
+      color: #2d3748;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    /* Animation for table rows */
+    @keyframes fadeInRow {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .info-table tbody tr {
+      animation: fadeInRow 0.3s ease forwards;
+      opacity: 0;
+    }
+
+    .info-table tbody tr:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .info-table tbody tr:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .info-table tbody tr:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .info-table tbody tr:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    .info-table tbody tr:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    /* Update button styles */
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .modal-btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+    }
+
+    .nutrition-btn {
+      background: #48bb78;
+      color: white;
+    }
+
+    .recipe-btn {
+      background: #4299e1;
+      color: white;
+    }
+
+    .modal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-btn.active {
+      transform: scale(1.05);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    #foodModalTitle {
+      color: #2d3748;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .info-table th {
+      text-align: center;
+      background-color: #f8f9fa;
+      padding: 15px;
+      font-weight: 600;
+    }
+
+    .info-table td {
+      padding: 12px 15px;
+      vertical-align: middle;
+    }
+
+    .modal-content {
+      padding: 30px;
+    }
+
+    .nutrition-header {
+      text-align: center;
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #e6ffed;
+      border-radius: 8px;
+      color: #2d3748;
+    }
+
+    .recipe-title {
+      text-align: center;
+      margin: 20px 0;
+      color: #2d3748;
+    }
+
+    .close-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.3s ease;
+    }
+
+    .close-button:hover {
+      color: #000;
+    }
+
+    /* Ensure chatbot stays on top */
+    df-messenger {
+      z-index: 999999 !important;
+      position: relative !important;
+    }
+
+    /* Style the chatbot container */
+    df-messenger>* {
+      z-index: 999999 !important;
+    }
+
+    /* Ensure the header stays below the chatbot */
+    .page-header {
+      z-index: 999;
+    }
+
+    /* Custom style for the chat window */
+    df-messenger {
+      --df-messenger-bot-message: #878fac;
+      --df-messenger-button-titlebar-color: #406c8d;
+      --df-messenger-chat-background-color: #fafafa;
+      --df-messenger-send-icon: #406c8d;
+      --df-messenger-user-message: #479b3d;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="preloader">
+    <div class="preloader-body">
+      <div class="cssload-container"><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+  <div class="page">
+    <!-- Page Header-->
+    <header class="section page-header">
+      <!-- RD Navbar-->
+      <div class="rd-navbar-wrap rd-navbar-modern-wrap">
+        <nav class="rd-navbar rd-navbar-modern" data-layout="rd-navbar-fixed" data-sm-layout="rd-navbar-fixed"
+          data-md-layout="rd-navbar-fixed" data-md-device-layout="rd-navbar-fixed" data-lg-layout="rd-navbar-static"
+          data-lg-device-layout="rd-navbar-fixed" data-xl-layout="rd-navbar-static"
+          data-xl-device-layout="rd-navbar-static" data-xxl-layout="rd-navbar-static"
+          data-xxl-device-layout="rd-navbar-static" data-lg-stick-up-offset="46px" data-xl-stick-up-offset="46px"
+          data-xxl-stick-up-offset="70px" data-lg-stick-up="true" data-xl-stick-up="true" data-xxl-stick-up="true">
+          <div class="rd-navbar-main-outer">
+            <div class="rd-navbar-main">
+              <!-- RD Navbar Panel-->
+              <div class="rd-navbar-panel">
+                <!-- RD Navbar Toggle-->
+                <button class="rd-navbar-toggle" data-rd-navbar-toggle=".rd-navbar-nav-wrap"><span></span></button>
+                <!-- RD Navbar Brand-->
+                <div style="max-width: 160px;"><a class="brand" href="index.html"><img src="images/logo_rm_noname.png"
+                      alt="" /></a></div>
+              </div>
+              <div class="rd-navbar-main-element">
+                <div class="rd-navbar-nav-wrap">
+                  <!-- RD Navbar Basket-->
+                  <!-- RD Navbar Nav-->
+                  <ul class="rd-navbar-nav">
+                    <li class="rd-nav-item active"><a class="rd-nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="rd-nav-item"><a class="rd-nav-link" href="thucdon.html">Thực Đơn</a>
+                    </li>
+                    <li class="rd-nav-item"><a class="rd-nav-link" href="troly.html">Trợ Lý</a>
+                    </li>
+
+                    <li class="rd-nav-item"><a class="rd-nav-link" href="contact-us.html">Liên Hệ</a></li>
+                    <li class="rd-nav-item"><a class="rd-nav-link" href="https://www.sendo.vn/sendofarm?source_page_id=home&source_pagetab_id=0&source_block_id=shortcut_icon">Đi Chợ Hộ 🛒</a>
+                    </li>
+                  </ul>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <!-- Swiper-->
+    <section class="section swiper-container swiper-slider swiper-slider-modern" data-loop="true" data-autoplay="5000"
+      data-simulate-touch="true" data-nav="true" data-slide-effect="fade">
+      <div class="swiper-wrapper text-left">
+        <!-- Slide 1 -->
+        <div class="swiper-slide context-dark" style="position: relative;">
+          <!-- Phần tử background với hiệu ứng blur -->
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                        background: url('images/ban1.png') no-repeat center center/cover;
+                        filter: blur(3px); z-index: 1;"></div>
+          <!-- Phần nội dung text, đảm bảo nằm trên background -->
+          <div class="swiper-slide-caption" style="position: relative; z-index: 2;">
+            <div class="container">
+              <div class="row justify-content-center justify-content-xxl-start">
+                <div class="col-md-10 col-xxl-6">
+                  <div class="slider-modern-box">
+                    <h1 class="slider-modern-title">
+                      <span data-caption-animate="slideInDown" data-caption-delay="0" style="color: green;">Cheerful
+                        Meal</span>
+                    </h1>
+                    <p data-caption-animate="fadeInRight" data-caption-delay="400"
+                      style="color: black;font-size: 18px;">
+                      Cheerful Meal là nền tảng giúp bố mẹ xây dựng thực đơn dinh dưỡng khoa học cho bé từ 7 tháng đến 5
+                      tuổi. Với công thức cân đối theo độ tuổi, nhu cầu dinh dưỡng và sở thích ăn uống, Cheerful Meal
+                      mang đến những bữa ăn không chỉ ngon miệng mà còn tốt cho sự phát triển của bé.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="swiper-slide context-dark" style="position: relative;">
+          <!-- Phần tử background với hiệu ứng blur -->
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                        background: url('images/ban3.png') no-repeat center center/cover;
+                        filter: blur(3px); z-index: 1;"></div>
+          <!-- Phần nội dung text -->
+          <div class="swiper-slide-caption" style="position: relative; z-index: 2;">
+            <div class="container">
+              <div class="row justify-content-center justify-content-xxl-start">
+                <div class="col-md-10 col-xxl-6">
+                  <div class="slider-modern-box">
+                    <h1 class="slider-modern-title">
+                      <span data-caption-animate="slideInLeft" data-caption-delay="0"
+                        style="color: green;">Nutrition</span>
+                    </h1>
+                    <p data-caption-animate="fadeInRight" data-caption-delay="400"
+                      style="color: black;font-size: 18px;">
+                      Bé ăn ngon, mẹ yên tâm cùng Cheerful Meal! Chúng tôi giúp bạn thiết kế thực đơn hoàn hảo cho bé từ
+                      7 tháng đến 5 tuổi, cân đối đầy đủ dưỡng chất và phù hợp với từng giai đoạn phát triển. Từ ăn dặm
+                      đến bữa chính, mọi công thức đều được kiểm chứng để đảm bảo bé yêu phát triển khỏe mạnh và vui vẻ.
+                    </p>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="swiper-slide" style="position: relative;">
+          <!-- Phần tử background với hiệu ứng blur -->
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                        background: url('images/ban2.jpg') no-repeat center center/cover;
+                        filter: blur(3px); z-index: 1;"></div>
+          <!-- Phần nội dung text -->
+          <div class="swiper-slide-caption" style="position: relative; z-index: 2;">
+            <div class="container">
+              <div class="row justify-content-center justify-content-xxl-start">
+                <div class="col-md-10 col-xxl-6">
+                  <div class="slider-modern-box">
+                    <h1 class="slider-modern-title">
+                      <span data-caption-animate="slideInDown" data-caption-delay="0"
+                        style="color: green;">Technology</span>
+                    </h1>
+                    <p data-caption-animate="fadeInRight" data-caption-delay="400"
+                      style="color: white;font-size: 18px;">
+                      Hệ thống AI phân tích nhu cầu dinh dưỡng theo độ tuổi, cân nặng và sở thích ăn uống, giúp bạn lên
+                      kế hoạch bữa ăn cân đối, khoa học. Tiện lợi, nhanh chóng và an toàn – Cheerful Meal đồng hành cùng
+                      mẹ trong hành trình nuôi con khỏe mạnh! </p>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swiper Navigation-->
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+      <!-- Swiper Pagination-->
+      <div class="swiper-pagination swiper-pagination-style-2"></div>
+    </section>
+
+    <!-- Icons Ruby-->
+    <section class="section section-md bg-default section-top-image">
+      <div class="container">
+        <div class="row row-30 justify-content-center">
+          <div class="col-sm-6 col-lg-4 wow fadeInRight" data-wow-delay="0s">
+            <article class="box-icon-ruby">
+              <div
+                class="unit box-icon-ruby-body flex-column flex-md-row text-md-left flex-lg-column align-items-center text-lg-center flex-xl-row text-xl-left">
+                <div class="unit-left">
+                  <div class="box-icon-ruby-icon linearicons-leaf"></div>
+                </div>
+                <div class="unit-body">
+                  <h4 class="box-icon-ruby-title"><a href="#">Dinh dưỡng cân bằng</a></h4>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="col-sm-6 col-lg-4 wow fadeInRight" data-wow-delay=".1s">
+            <article class="box-icon-ruby">
+              <div
+                class="unit box-icon-ruby-body flex-column flex-md-row text-md-left flex-lg-column align-items-center text-lg-center flex-xl-row text-xl-left">
+                <div class="unit-left">
+                  <div class="box-icon-ruby-icon linearicons-shovel"></div>
+                </div>
+                <div class="unit-body">
+                  <h4 class="box-icon-ruby-title"><a href="#">Xây dựng khoa học</a></h4>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="col-sm-6 col-lg-4 wow fadeInRight" data-wow-delay=".2s">
+            <article class="box-icon-ruby">
+              <div
+                class="unit box-icon-ruby-body flex-column flex-md-row text-md-left flex-lg-column align-items-center text-lg-center flex-xl-row text-xl-left">
+                <div class="unit-left">
+                  <div class="box-icon-ruby-icon linearicons-sun"></div>
+                </div>
+                <div class="unit-body">
+                  <h4 class="box-icon-ruby-title"><a href="#">Dễ dàng, tiện lợi</a></h4>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trending products-->
+
+    <section style="margin-top: 35px; padding: 40px 0;">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 0 15px;">
+        <h2 style="text-align: center; margin-bottom: 40px;font-family: Arial, sans-serif;">Thực đơn phổ biến cho bé
+        </h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 30px;">
+          <!-- Large image on the left -->
+          <div style="flex: 1; min-width: 300px;">
+            <div class="food-item" onclick="showFoodInfo('Cháo bí đỏ')">
+              <img src="https://www.cet.edu.vn/wp-content/uploads/2018/12/chao-tom-bi-do.jpg" alt="Cháo bí đỏ"
+                style="width: 100%; height: auto; border-radius: 15px;">
+              <div class="food-overlay">
+                <h3 style="font-family: Arial, sans-serif;">Cháo bí đỏ</h3>
+                <p>Click để xem chi tiết</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 smaller images on the right -->
+          <div style="flex: 1; min-width: 300px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+              <div class="food-item" onclick="showFoodInfo('Cháo cá hồi')">
+                <img
+                  src="https://cdn.tgdd.vn/Files/2017/03/26/965322/cach-nau-chao-ca-hoi-cho-be-khong-bi-tanh-202203211413554439.jpg"
+                  alt="Cháo cá hồi" style="width: 100%; height: auto; border-radius: 10px;">
+                <div class="food-overlay">
+                  <h4 style="font-family: Arial, sans-serif;">Cháo cá hồi</h4>
+                  <p>Click để xem chi tiết</p>
+                </div>
+              </div>
+              <div class="food-item" onclick="showFoodInfo('Súp cà rốt')">
+                <img src="https://cdn.tgdd.vn/2020/08/CookProduct/Untitled-1-1200x676-13.jpg" alt="Súp cà rốt"
+                  style="width: 100%; height: auto; border-radius: 10px;">
+                <div class="food-overlay">
+                  <h4 style="font-family: Arial, sans-serif;">Súp cà rốt</h4>
+                  <p>Click để xem chi tiết</p>
+                </div>
+              </div>
+              <div class="food-item" onclick="showFoodInfo('Cháo đậu xanh')">
+                <img
+                  src="https://cdn.tgdd.vn/Files/2018/12/11/1137256/3-cach-nau-chao-dau-xanh-thom-ngon-don-gian-cho-ca-nha-7.jpg"
+                  alt="Cháo đậu xanh" style="width: 100%; height: auto; border-radius: 10px;">
+                <div class="food-overlay">
+                  <h4 style="font-family: Arial, sans-serif;">Cháo đậu xanh</h4>
+                  <p>Click để xem chi tiết</p>
+                </div>
+              </div>
+              <div class="food-item" onclick="showFoodInfo('Nghiền táo')">
+                <img src="https://sakuravietnam.com.vn/wp-content/uploads/2020/03/tao-nghien-cho-be-an-dam-1.jpg"
+                  alt="Nghiền táo" style="width: 100%; height: auto; border-radius: 10px;">
+                <div class="food-overlay">
+                  <h4 style="font-family: Arial, sans-serif;">Nghiền táo</h4>
+                  <p>Click để xem chi tiết</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div id="foodModal" class="food-modal">
+        <div class="modal-content">
+          <span class="close-button" onclick="closeModal()">&times;</span>
+          <h2 id="foodModalTitle"></h2>
+          <div class="modal-buttons">
+            <button class="modal-btn nutrition-btn active" onclick="showNutrition()">
+              🍜 <span style="font-family: Arial, sans-serif;">Thông tin dinh dưỡng</span>
+            </button>
+            <button class="modal-btn recipe-btn" onclick="showRecipe()">
+              📔 <span style="font-family: Arial, sans-serif;">Công thức món ăn</span>
+            </button>
+          </div>
+          <div class="modal-info">
+            <div id="nutritionInfo" class="info-panel">
+              <p class="nutrition-header">Các thông tin dinh dưỡng của món ăn đã được phê duyệt bởi Viện Dinh dưỡng Quốc
+                gia</p>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>CHỈ TIÊU</th>
+                    <th>GIÁ TRỊ</th>
+                    <th>ĐƠN VỊ</th>
+                  </tr>
+                </thead>
+                <tbody id="nutritionTableBody"></tbody>
+              </table>
+            </div>
+            <div id="recipeInfo" class="info-panel">
+              <h3 class="recipe-title" style="font-family: Arial, sans-serif;">CÔNG THỨC MÓN ĂN</h3>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>TÊN NGUYÊN LIỆU</th>
+                    <th>ĐỊNH LƯỢNG</th>
+                    <th>CÁCH CHUẨN BỊ</th>
+                  </tr>
+                </thead>
+                <tbody id="recipeTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section CTA 2-->
+    <section class="section text-center">
+      <div class="parallax-container" data-parallax-img="images/our.jpg">
+        <div class="parallax-content section-xl section-inset-custom-1 context-dark bg-overlay-40">
+          <div class="container">
+            <h2 class="oh font-weight-normal"><span class="d-inline-block wow slideInDown" data-wow-delay="0s"
+                style="color: black;">Our Approach</span></h2>
+            <p class="oh big text-width-large"><span class="d-inline-block wow slideInUp" data-wow-delay=".2s"
+                style="color: black;">Chúng tôi tiếp cận các giải pháp dinh dưỡng một cách khoa học, cân bằng, theo đầy
+                đủ các dẫn chứng khoa học cũng như sự tư vấn các chuyên gia hàng đầu. Cam kết mang đến một thực đơn cho
+                bé phong phú, đầy đủ mà còn mang tính tùy biến cao!</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team of professionals-->
+    <section class="section section-md bg-default">
+      <div class="container">
+        <div class="oh" style="min-height: 130px;">
+          <h2 class="wow" style="font-family: Arial, sans-serif;font-size: 42px;" data-wow-delay="0s">Sự hỗ trợ, tư vấn
+            của các chuyên gia hàng đầu</h2>
+        </div>
+        <div class="row row-30 justify-content-center">
+          <div class="col-md-6 col-lg-4 col-xl-4 wow fadeInRight" data-wow-delay="0s">
+            <!-- Team Classic-->
+            <article class="team-classic"><a href="#" ><img style="width: 250px; height: 320px;" src="https://umcclinic.com.vn/Data/Sites/1/News/497/bs-ph%E1%BA%A1m-th%E1%BA%BF-vi%E1%BB%87t.jpg" alt="" width="370" height="406" /></a>
+              <div class="team-classic-caption">
+                <h5 class="team-classic-name"><a href="#">Nguyễn Văn Khiêm</a></h5>
+                <p class="team-classic-status">Tiến Sĩ</p>
+              </div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 col-xl-4 wow fadeInRight" data-wow-delay=".1s">
+            <!-- Team Classic-->
+            <article class="team-classic"><a href="#" ><img style="width: 250px; height: 320px;" src="https://isofhcare-backup.s3-ap-southeast-1.amazonaws.com/images/danh-sach-bac-si-tai-phong-kham-benh-vien-dai-hoc-y-duoc-1-ivie-(4)-jpg_d07100ca_aad8_4fee_bdce_6be694de8b16.png" alt="" width="370" height="406" /></a>
+              <div class="team-classic-caption">
+                <h5 class="team-classic-name"><a href="#">Nguyễn Thị Hòa</a></h5>
+                <p class="team-classic-status">Ph. D</p>
+              </div>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 col-xl-4 wow fadeInRight" data-wow-delay=".2s">
+            <!-- Team Classic-->
+            <article class="team-classic"><a href="#" ><img style="width: 250px; height: 320px;" src="https://isofhcare-backup.s3-ap-southeast-1.amazonaws.com/images/danh-sach-bac-si-tai-phong-kham-benh-vien-dai-hoc-y-duoc-1-ivie-(5)-jpg_e9081bce_94df_4942_ae1d_4b7058d16c21.png" alt="" width="370" height="406" /></a>
+              <div class="team-classic-caption">
+                <h5 class="team-classic-name"><a href="#">Trần Phương Tuấn</a></h5>
+                <p class="team-classic-status">Tiến Sĩ</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About us-->
+    <section class="section">
+      <div class="parallax-container" data-parallax-img="images/bottom.png">
+        <div class="parallax-content section-xl context-dark bg-overlay-68">
+          <div class="container">
+            <div class="row row-lg row-50 justify-content-center border-classic border-classic-big">
+              <div class="col-sm-6 col-md-5 col-lg-3 wow fadeInLeft" data-wow-delay="0s">
+
+              </div>
+              <div class="col-sm-6 col-md-5 col-lg-3 wow fadeInLeft" data-wow-delay=".1s">
+
+              </div>
+              <div class="col-sm-6 col-md-5 col-lg-3 wow fadeInLeft" data-wow-delay=".2s">
+
+              </div>
+              <div class="col-sm-6 col-md-5 col-lg-3 wow fadeInLeft" data-wow-delay=".3s">
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+    <!-- Improve your interior with deco-->
+
+    <!-- Page Footer-->
+    <footer class="section footer-variant-2 footer-modern context-dark section-top-image section-top-image-dark">
+      <div class="footer-variant-2-content">
+        <div class="container">
+          <div class="row row-40 justify-content-between">
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+              <div class="oh-desktop">
+                <div class="wow slideInRight" data-wow-delay="0s">
+                  <div class="footer-brand"><a href="index.html"><img src="images/logo_rm.png" alt="" width="196"
+                        height="42" /></a></div>
+                  <p class="rights"><span>&copy;&nbsp;</span><span class="copyright-year"></span> <span>Cheerful
+                      Meal</span>. All rights reserved
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-4 col-xl-4">
+              <div class="oh-desktop">
+                <ul class="footer-contacts d-inline-block d-md-block">
+                  <li>
+                    <div class="unit unit-spacing-xs">
+                      <div class="unit-left"><span class="icon fa fa-phone"></span></div>
+                      <div class="unit-body"><a class="link-phone" href="tel:#">0902288358</a></div>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="unit unit-spacing-xs">
+                      <div class="unit-left"><span class="icon fa fa-clock-o"></span></div>
+                      <div class="unit-body">
+                        <p>T2-T6: 07:00AM - 05:00PM</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="unit unit-spacing-xs">
+                      <div class="unit-left"><span class="icon fa fa-location-arrow"></span></div>
+                      <div class="unit-body"><a class="link-location" href="#">Hà Nội - Việt Nam
+                        </a></div>
+                    </div>
+                  </li>
+                       <li>
+                    <div class="unit unit-spacing-xs">
+                      <div class="unit-left"><span class="icon fa fa-bell"></span></div>
+                      <div class="unit-body"><a class="link-location" href="https://www.facebook.com/people/B%C3%A9-%C4%83n-vui-Thi%E1%BA%BFt-k%E1%BA%BF-th%E1%BB%B1c-%C4%91%C6%A1n-cho-b%C3%A9/61573713724437/">FanPage: Cheerful Meal
+                          </a></div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-lg-3 col-xl-3">
+              <div class="oh-desktop">
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+  <div class="footer-variant-2-bottom-panel">
+    <div class="container">
+      <!-- Rights-->
+      <div class="group-sm group-sm-justify">
+
+      </div>
+    </div>
+  </div>
+  </footer>
+  </div>
+  <!-- Global Mailform Output-->
+  <div class="snackbars" id="form-output-global"></div>
+  <!-- Javascript-->
+  <script src="js/core.min.js"></script>
+  <script src="js/script.js"></script>
+  <!-- coded by Ragnar-->
+  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+  <df-messenger intent="WELCOME" chat-title="Cheerful-Meal_Assistant" agent-id="7a7a6f23-166d-4feb-b336-eb0ac5413141"
+    language-code="vi"></df-messenger>
+  <script>
+    let currentFood = ''; // Define currentFood variable
+
+    function showFoodInfo(foodName) {
+      currentFood = foodName;
+      document.getElementById('foodModalTitle').textContent = foodName;
+      document.getElementById('foodModal').style.display = 'block';
+      showNutrition(); // Show nutrition by default
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    function closeModal() {
+      document.getElementById('foodModal').style.display = 'none';
+      document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+
+    // Add more food data
+    const foodData = {
+      'Cháo bí đỏ': {
+        nutrition: [
+          { indicator: 'Năng lượng', value: '435.3', unit: 'Kcal' },
+          { indicator: 'Protein', value: '20.9', unit: 'g' },
+          { indicator: 'Lipid', value: '7.4', unit: 'g' },
+          { indicator: 'Glucid', value: '71.2', unit: 'g' },
+          { indicator: 'Canxi', value: '107.1', unit: 'mg' },
+          { indicator: 'Sắt', value: '2.3', unit: 'mg' },
+          { indicator: 'Muối', value: '1.4', unit: 'g' }
+        ],
+        recipe: [
+          { ingredient: 'Bí đỏ', amount: '100g', preparation: 'Gọt vỏ, cắt nhỏ' },
+          { ingredient: 'Gạo tẻ', amount: '50g', preparation: 'Vo sạch' },
+          { ingredient: 'Dầu ăn', amount: '5ml', preparation: 'Dầu thực vật' },
+          { ingredient: 'Muối', amount: '2g', preparation: 'Muối iốt' }
+        ]
+      },
+      'Cháo cá hồi': {
+        nutrition: [
+          { indicator: 'Năng lượng', value: '389.5', unit: 'Kcal' },
+          { indicator: 'Protein', value: '25.3', unit: 'g' },
+          { indicator: 'Lipid', value: '8.2', unit: 'g' },
+          { indicator: 'Glucid', value: '65.4', unit: 'g' },
+          { indicator: 'Canxi', value: '156.2', unit: 'mg' },
+          { indicator: 'Sắt', value: '2.8', unit: 'mg' },
+          { indicator: 'Muối', value: '1.2', unit: 'g' }
+        ],
+        recipe: [
+          { ingredient: 'Cá hồi', amount: '100g', preparation: 'Phi lê, bỏ xương' },
+          { ingredient: 'Gạo tẻ', amount: '50g', preparation: 'Vo sạch' },
+          { ingredient: 'Rau chân vịt', amount: '20g', preparation: 'Rửa sạch, xắt nhỏ' },
+          { ingredient: 'Dầu olive', amount: '5ml', preparation: 'Dầu ăn' }
+        ]
+      },
+      'Súp cà rốt': {
+        nutrition: [
+          { indicator: 'Năng lượng', value: '245.6', unit: 'Kcal' },
+          { indicator: 'Protein', value: '12.4', unit: 'g' },
+          { indicator: 'Lipid', value: '5.8', unit: 'g' },
+          { indicator: 'Glucid', value: '42.3', unit: 'g' },
+          { indicator: 'Canxi', value: '89.4', unit: 'mg' },
+          { indicator: 'Sắt', value: '1.9', unit: 'mg' },
+          { indicator: 'Muối', value: '1.0', unit: 'g' }
+        ],
+        recipe: [
+          { ingredient: 'Cà rốt', amount: '150g', preparation: 'Gọt vỏ, thái khúc' },
+          { ingredient: 'Khoai tây', amount: '50g', preparation: 'Gọt vỏ, thái khúc' },
+          { ingredient: 'Hành tây', amount: '30g', preparation: 'Băm nhỏ' },
+          { ingredient: 'Nước dùng', amount: '300ml', preparation: 'Nước dùng rau củ' }
+        ]
+      },
+      'Cháo đậu xanh': {
+        nutrition: [
+          { indicator: 'Năng lượng', value: '312.7', unit: 'Kcal' },
+          { indicator: 'Protein', value: '18.6', unit: 'g' },
+          { indicator: 'Lipid', value: '4.2', unit: 'g' },
+          { indicator: 'Glucid', value: '58.9', unit: 'g' },
+          { indicator: 'Canxi', value: '95.3', unit: 'mg' },
+          { indicator: 'Sắt', value: '3.1', unit: 'mg' },
+          { indicator: 'Muối', value: '1.1', unit: 'g' }
+        ],
+        recipe: [
+          { ingredient: 'Đậu xanh', amount: '50g', preparation: 'Ngâm 2 tiếng' },
+          { ingredient: 'Gạo tẻ', amount: '40g', preparation: 'Vo sạch' },
+          { ingredient: 'Hành lá', amount: '10g', preparation: 'Rửa sạch, thái nhỏ' },
+          { ingredient: 'Muối', amount: '2g', preparation: 'Muối iốt' }
+        ]
+      },
+      'Nghiền táo': {
+        nutrition: [
+          { indicator: 'Năng lượng', value: '187.4', unit: 'Kcal' },
+          { indicator: 'Protein', value: '0.9', unit: 'g' },
+          { indicator: 'Lipid', value: '0.5', unit: 'g' },
+          { indicator: 'Glucid', value: '45.6', unit: 'g' },
+          { indicator: 'Canxi', value: '45.2', unit: 'mg' },
+          { indicator: 'Sắt', value: '0.8', unit: 'mg' },
+          { indicator: 'Muối', value: '0', unit: 'g' }
+        ],
+        recipe: [
+          { ingredient: 'Táo', amount: '200g', preparation: 'Gọt vỏ, bỏ hạt' },
+          { ingredient: 'Chanh', amount: '5ml', preparation: 'Nước cốt chanh' },
+          { ingredient: 'Quế', amount: '1g', preparation: 'Tùy chọn' },
+          { ingredient: 'Nước', amount: '50ml', preparation: 'Nước lọc' }
+        ]
+      }
+    };
+
+    function showNutrition() {
+      const nutritionInfo = document.getElementById('nutritionInfo');
+      const recipeInfo = document.getElementById('recipeInfo');
+      const nutritionTableBody = document.getElementById('nutritionTableBody');
+
+      nutritionInfo.style.display = 'block';
+      recipeInfo.style.display = 'none';
+
+      // Clear and populate nutrition table
+      nutritionTableBody.innerHTML = foodData[currentFood].nutrition
+        .map(item => `
+            <tr>
+                <td>${item.indicator}</td>
+                <td>${item.value}</td>
+                <td>${item.unit}</td>
+            </tr>
+        `).join('');
+
+      document.querySelector('.nutrition-btn').classList.add('active');
+      document.querySelector('.recipe-btn').classList.remove('active');
+    }
+
+    function showRecipe() {
+      const nutritionInfo = document.getElementById('nutritionInfo');
+      const recipeInfo = document.getElementById('recipeInfo');
+      const recipeTableBody = document.getElementById('recipeTableBody');
+
+      nutritionInfo.style.display = 'none';
+      recipeInfo.style.display = 'block';
+
+      // Clear and populate recipe table
+      recipeTableBody.innerHTML = foodData[currentFood].recipe
+        .map(item => `
+            <tr>
+                <td>${item.ingredient}</td>
+                <td>${item.amount}</td>
+                <td>${item.preparation}</td>
+            </tr>
+        `).join('');
+
+      document.querySelector('.recipe-btn').classList.add('active');
+      document.querySelector('.nutrition-btn').classList.remove('active');
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+      if (event.target == document.getElementById('foodModal')) {
+        closeModal();
+      }
+    }
+
+    // Add Font Awesome
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!document.querySelector('link[href*="font-awesome"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+        document.head.appendChild(link);
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thực đơn cho bé 5-7 tháng tuổi</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+            margin-bottom: 30px;
+        }
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .food-item {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .food-item:hover {
+            transform: translateY(-5px);
+        }
+        .food-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        .food-info {
+            padding: 15px;
+        }
+        .food-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+        .food-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-nutrition {
+            background-color: #66cc99;
+            color: white;
+        }
+        .btn-recipe {
+            background-color: #ff9966;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Thực đơn cho bé 5-7 tháng tuổi</h1>
+        <div class="food-grid" id="foodGrid"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalContent"></p>
+        </div>
+    </div>
+
+    <script>
+        const foods = [
+            {
+                name: "Cháo bí đỏ",
+                image: "https://i.imgur.com/nGF1K8b.jpg",
+                nutrition: "Giàu vitamin A, chất xơ, và khoáng chất.",
+                recipe: "1. Nấu nhừ bí đỏ\n2. Xay nhuyễn\n3. Nấu với gạo thành cháo\n4. Thêm dầu ăn và đánh nhuyễn"
+            },
+            {
+                name: "Cháo cá hồi",
+                image: "https://i.imgur.com/JXMhgpU.jpg",
+                nutrition: "Giàu protein, omega-3, và vitamin D.",
+                recipe: "1. Nấu cá hồi chín\n2. Tách xương và nghiền nhỏ\n3. Nấu với gạo thành cháo\n4. Thêm rau chân vịt xay nhuyễn"
+            },
+            {
+                name: "Súp cà rốt",
+                image: "https://i.imgur.com/QZlaHMg.jpg",
+                nutrition: "Giàu beta-carotene, vitamin A, và chất xơ.",
+                recipe: "1. Nấu cà rốt mềm\n2. Xay nhuyễn cà rốt\n3. Nấu với nước thành súp\n4. Thêm chút dầu olive"
+            },
+            {
+                name: "Cháo đậu xanh",
+                image: "https://i.imgur.com/8PFkGAA.jpg",
+                nutrition: "Giàu protein thực vật, chất xơ, và vitamin B.",
+                recipe: "1. Ngâm đậu xanh\n2. Nấu đậu xanh với gạo\n3. Nấu thành cháo\n4. Xay nhuyễn"
+            },
+            {
+                name: "Nghiền táo",
+                image: "https://i.imgur.com/LZvLv7A.jpg",
+                nutrition: "Giàu vitamin C, chất xơ, và chất chống oxy hóa.",
+                recipe: "1. Gọt vỏ và bỏ hạt táo\n2. Hấp táo mềm\n3. Nghiền nhuyễn\n4. Thêm chút nước cốt chanh"
+            }
+        ];
+
+        const foodGrid = document.getElementById('foodGrid');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const closeBtn = document.getElementsByClassName('close')[0];
+
+        foods.forEach(food => {
+            const foodItem = document.createElement('div');
+            foodItem.className = 'food-item';
+            foodItem.innerHTML = `
+                <img src="${food.image}" alt="${food.name}" class="food-image">
+                <div class="food-info">
+                    <div class="food-name">${food.name}</div>
+                    <div class="food-buttons">
+                        <button class="btn btn-nutrition" onclick="showInfo('${food.name}', 'nutrition')">Dinh dưỡng</button>
+                        <button class="btn btn-recipe" onclick="showInfo('${food.name}', 'recipe')">Công thức</button>
+                    </div>
+                </div>
+            `;
+            foodGrid.appendChild(foodItem);
+        });
+
+        function showInfo(foodName, type) {
+            const food = foods.find(f => f.name === foodName);
+            modalTitle.textContent = `${type === 'nutrition' ? 'Dinh dưỡng' : 'Công thức'}: ${food.name}`;
+            modalContent.textContent = food[type];
+            modal.style.display = 'block';
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
