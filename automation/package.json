@@ -1,0 +1,22 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run",
+    "test:e2e": "cypress run --spec 'cypress/e2e/*.cy.js'",
+    "test:unit": "cypress run --spec 'cypress/e2e/unit/**/*.cy.js'",
+    "test:home": "cypress run --spec 'cypress/e2e/home.cy.js'",
+    "test:open": "cypress open",
+    "test:open:e2e": "cypress open --e2e --spec 'cypress/e2e/**/*.cy.js'",
+    "test:open:unit": "cypress open --e2e --spec 'cypress/e2e/unit/**/*.cy.js'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "cypress": "^15.9.0"
+  }
+}
