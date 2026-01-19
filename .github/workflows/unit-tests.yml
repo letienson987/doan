@@ -1,0 +1,42 @@
+name: Unit Tests Only
+
+on:
+  push:
+    branches: [ feature/**, bugfix/** ]
+    paths:
+      - 'automation/cypress/e2e/unit/**'
+  pull_request:
+    branches: [ feature/**, bugfix/** ]
+    paths:
+      - 'automation/cypress/e2e/unit/**'
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./automation
+        run: npm ci
+
+      - name: Run Unit Tests Only
+        working-directory: ./automation
+        run: npm run test:unit
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: unit-test-results
+          path: automation/cypress/screenshots/
+          retention-days: 7

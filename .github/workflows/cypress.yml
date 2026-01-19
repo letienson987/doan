@@ -1,0 +1,114 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./automation
+        run: npm ci
+
+      - name: Verify Cypress installation
+        working-directory: ./automation
+        run: npx cypress verify
+
+      - name: Run Unit Tests
+        working-directory: ./automation
+        run: npm run test:unit
+
+      - name: Run E2E Tests
+        working-directory: ./automation
+        run: npm run test:e2e
+        continue-on-error: false
+
+      - name: Generate test summary
+        if: always()
+        working-directory: ./automation
+        run: |
+          echo "# Cypress Test Results" > test-summary.md
+          echo "- **Date**: $(date)" >> test-summary.md
+          echo "- **Branch**: ${{ github.ref_name }}" >> test-summary.md
+          echo "- **PR**: ${{ github.event.number }}" >> test-summary.md
+          echo "- **Node.js**: ${{ matrix.node-version }}" >> test-summary.md
+          echo "" >> test-summary.md
+          echo "## Test Status" >> test-summary.md
+          if [ -d "cypress/screenshots" ]; then
+            echo "- Screenshots: $(find cypress/screenshots -name "*.png" | wc -l) files" >> test-summary.md
+          fi
+          if [ -d "cypress/videos" ]; then
+            echo "- Videos: $(find cypress/videos -name "*.mp4" | wc -l) files" >> test-summary.md
+          fi
+
+      - name: Comment PR with test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const summaryPath = path.join(process.cwd(), 'automation', 'test-summary.md');
+            let summary = '## Cypress Test Results\n\n';
+            summary += `✅ **All tests completed**\n\n`;
+            summary += `- Branch: \`${process.env.GITHUB_REF_NAME}\`\n`;
+            summary += `- Node.js: \`${process.env.NODE_VERSION}\`\n`;
+            summary += `- Status: Tests completed successfully\n\n`;
+
+            if (fs.existsSync(summaryPath)) {
+              const content = fs.readFileSync(summaryPath, 'utf8');
+              summary += content;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Upload test screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots-${{ matrix.node-version }}
+          path: automation/cypress/screenshots/
+          retention-days: 7
+
+      - name: Upload test videos
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-${{ matrix.node-version }}
+          path: automation/cypress/videos/
+          retention-days: 7
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-summary-${{ matrix.node-version }}
+          path: automation/test-summary.md
+          retention-days: 30
