@@ -32,7 +32,7 @@ describe("Filter Component Unit Tests", () => {
   });
 
   it("should change active state when meal filter clicked", () => {
-    MenuPage.filterByMeal("lunch");
+    MenuPage.filterByMealType("lunch");
     MenuPage.verifyFilterActive("meal", "lunch");
     MenuPage.getMealFilterButtons().eq(0).should("not.have.class", "active");
   });
@@ -45,7 +45,7 @@ describe("Filter Component Unit Tests", () => {
 
   it("should maintain active state for multiple filters", () => {
     MenuPage.filterByAge("7-12");
-    MenuPage.filterByMeal("lunch");
+    MenuPage.filterByMealType("lunch");
 
     MenuPage.verifyFilterActive("age", "7-12");
     MenuPage.verifyFilterActive("meal", "lunch");

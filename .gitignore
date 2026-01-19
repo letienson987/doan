@@ -1,2 +1,4 @@
 node_modules/
 automation/cypress/screenshots
+reports/
+automation/cypress/videos

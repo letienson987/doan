@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -94,7 +99,7 @@ jobs:
             summary += `- Branch: \`${process.env.GITHUB_REF_NAME}\`\n`;
             summary += `- Node.js: \`20\`\n`;
             summary += `- Status: Tests completed successfully\n\n`;
-            summary += `📊 **Detailed HTML Report**: Download from Artifacts → \`cypress-html-report-20\`\n\n`;
+            summary += ` **Detailed HTML Report**: Download from Artifacts → \`cypress-html-report-20\`\n\n`;
 
             if (fs.existsSync(summaryPath)) {
               const content = fs.readFileSync(summaryPath, 'utf8');
@@ -114,14 +119,6 @@ jobs:
         with:
           name: cypress-screenshots-20
           path: automation/cypress/screenshots/
-          retention-days: 7
-
-      - name: Upload test videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos-20
-          path: automation/cypress/videos/
           retention-days: 7
 
       - name: Upload test summary
