@@ -111,6 +111,12 @@ Mỗi PR sẽ có comment tự động với kết quả test:
 - Node.js version được sử dụng
 - Link download artifacts
 
+### ✅ Web Server Setup
+Workflow tự động start web server trước khi chạy tests:
+- Sử dụng `serve` để serve static files
+- Chạy trên `localhost:3000` (cùng với baseUrl trong Cypress config)
+- Đợi server ready trước khi chạy tests
+
 ### ✅ Test Summary
 File `test-summary.md` được tạo với thông tin chi tiết về:
 - Thời gian chạy
