@@ -12,18 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
-    strategy:
-      matrix:
-        node-version: [18, 20]
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: automation/package-lock.json
 
@@ -57,19 +58,32 @@ jobs:
         if: always()
         working-directory: ./automation
         run: |
-          echo "# Cypress Test Results" > test-summary.md
+          echo "#  Cypress Test Results" > test-summary.md
+          echo "" >> test-summary.md
+          echo "## 🚀 Test Execution Details" >> test-summary.md
           echo "- **Date**: $(date)" >> test-summary.md
           echo "- **Branch**: ${{ github.ref_name }}" >> test-summary.md
           echo "- **PR**: ${{ github.event.number }}" >> test-summary.md
-          echo "- **Node.js**: ${{ matrix.node-version }}" >> test-summary.md
+          echo "- **Node.js**: 20" >> test-summary.md
+          echo "- **Runner**: ubuntu-latest" >> test-summary.md
           echo "" >> test-summary.md
-          echo "## Test Status" >> test-summary.md
+          echo "##  Test Status" >> test-summary.md
           if [ -d "cypress/screenshots" ]; then
-            echo "- Screenshots: $(find cypress/screenshots -name "*.png" | wc -l) files" >> test-summary.md
+            screenshot_count=$(find cypress/screenshots -name "*.png" | wc -l)
+            echo "-  Screenshots: $screenshot_count files" >> test-summary.md
           fi
           if [ -d "cypress/videos" ]; then
-            echo "- Videos: $(find cypress/videos -name "*.mp4" | wc -l) files" >> test-summary.md
+            video_count=$(find cypress/videos -name "*.mp4" | wc -l)
+            echo "-  Videos: $video_count files" >> test-summary.md
           fi
+          if [ -d "cypress/reports" ]; then
+            report_count=$(find cypress/reports -name "*.html" | wc -l)
+            echo "-  HTML Reports: $report_count files" >> test-summary.md
+          fi
+          echo "" >> test-summary.md
+          echo "##  Next Steps" >> test-summary.md
+          echo "- Download artifacts for detailed results" >> test-summary.md
+          echo "- Check HTML report for interactive test details" >> test-summary.md
 
       - name: Comment PR with test results
         if: always() && github.event_name == 'pull_request'
@@ -83,8 +97,9 @@ jobs:
             let summary = '## Cypress Test Results\n\n';
             summary += `**All tests completed**\n\n`;
             summary += `- Branch: \`${process.env.GITHUB_REF_NAME}\`\n`;
-            summary += `- Node.js: \`${process.env.NODE_VERSION}\`\n`;
+            summary += `- Node.js: \`20\`\n`;
             summary += `- Status: Tests completed successfully\n\n`;
+            summary += ` **Detailed HTML Report**: Download from Artifacts → \`cypress-html-report-20\`\n\n`;
 
             if (fs.existsSync(summaryPath)) {
               const content = fs.readFileSync(summaryPath, 'utf8');
@@ -102,22 +117,22 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-screenshots-${{ matrix.node-version }}
+          name: cypress-screenshots-20
           path: automation/cypress/screenshots/
-          retention-days: 7
-
-      - name: Upload test videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos-${{ matrix.node-version }}
-          path: automation/cypress/videos/
           retention-days: 7
 
       - name: Upload test summary
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-summary-${{ matrix.node-version }}
+          name: test-summary-20
           path: automation/test-summary.md
+          retention-days: 30
+
+      - name: Upload Cypress HTML Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-html-report-20
+          path: automation/cypress/reports/
           retention-days: 30

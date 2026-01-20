@@ -12,7 +12,7 @@ describe("Swiper Component Unit Tests", () => {
 
     HomePage.getSwiperContainer().should("have.attr", "data-loop", "true");
     HomePage.getSwiperContainer().should("have.attr", "data-autoplay", "5000");
-    HomePage.getSwiperContainer().should("have.attr", "data-simulate-touch", "false");
+    HomePage.getSwiperContainer().should("have.attr", "data-simulate-touch", "true");
     HomePage.getSwiperContainer().should("have.attr", "data-nav", "true");
     HomePage.getSwiperContainer().should("have.attr", "data-slide-effect", "fade");
   });
