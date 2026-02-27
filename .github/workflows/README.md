@@ -113,7 +113,7 @@ Mỗi PR sẽ có comment tự động với kết quả test:
 
 ### ✅ Web Server Setup
 Workflow tự động start web server trước khi chạy tests:
-- Sử dụng `serve` để serve static files
+- Sử dụng `serve` để serve static files `npx serve . -p 3000`
 - Chạy trên `localhost:3000` (cùng với baseUrl trong Cypress config)
 - Đợi server ready trước khi chạy tests
 
