@@ -3,6 +3,7 @@ const { defineConfig } = require("cypress");
 module.exports = defineConfig({
   e2e: {
     baseUrl: "http://localhost:3000",
+    prodUrl: "https://cheerfulmeal-orpin.vercel.app/",
 
     viewportWidth: 1440,
     viewportHeight: 1000,
