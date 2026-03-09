@@ -9,6 +9,14 @@ class MenuPage {
     return cy.contains("Thực đơn dinh dưỡng cho bé");
   }
 
+  verifyPageActive() {
+    this.getPageTitle().should("be.visible");
+  }
+
+  verifyRecipeViewActive() {
+    this.getRecipeButton().should("have.class", "active");
+  }
+
   getMenuGrid() {
     return cy.get(".menu-grid");
   }
@@ -16,6 +24,11 @@ class MenuPage {
   getMenuItems() {
     return cy.get(".menu-item");
   }
+
+  verifyMenuItemsCount() {
+    this.getMenuItems().should("have.length", 6);
+  }
+
 
   // cac phan tu loc
   getAgeFilterButtons() {
@@ -58,6 +71,9 @@ class MenuPage {
 
   getNutritionTable() {
     return cy.get("#nutritionTableBody");
+  }
+  verifyNutritionViewActive() {
+    this.getNutritionButton().should("have.class", "active");
   }
 
   getRecipeTable() {
@@ -154,6 +170,9 @@ class MenuPage {
   verifyPageNavigation() {
     cy.get(".page-btn").contains("2").should("have.class", "active");
     this.getMenuItems().should("have.length.greaterThan", 0);
+  }
+  verifyFilterActive(filterType, filterValue) {
+    cy.get(`.filter-btn[data-${filterType}="${filterValue}"]`).should("have.class", "active");
   }
 
   // Additional methods for new tests

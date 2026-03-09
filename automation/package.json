@@ -10,13 +10,15 @@
     "test:home": "cypress run --spec 'cypress/e2e/home.cy.js'",
     "test:open": "cypress open",
     "test:open:e2e": "cypress open --e2e --spec 'cypress/e2e/**/*.cy.js'",
-    "test:open:unit": "cypress open --e2e --spec 'cypress/e2e/unit/**/*.cy.js'"
+    "test:open:unit": "cypress open --e2e --spec 'cypress/e2e/unit/**/*.cy.js'",
+    "test:all": "npm run test:unit && npm run test:e2e"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "cypress": "^15.9.0"
+    "cypress": "^15.11.0",
+    "cypress-mochawesome-reporter": "^3.8.2"
   }
 }

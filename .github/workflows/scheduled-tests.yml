@@ -1,0 +1,50 @@
+name: Scheduled Tests
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC (9 AM Vietnam time)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  scheduled-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./automation
+        run: npm ci
+
+      - name: Run all tests
+        working-directory: ./automation
+        run: |
+          echo "Running unit tests..."
+          npm run test:unit
+          echo "Running E2E tests..."
+          npm run test:e2e
+
+      - name: Create test report
+        if: always()
+        working-directory: ./automation
+        run: |
+          echo "# Test Report - $(date)" > test-report.md
+          echo "## Unit Tests: $(find cypress/screenshots/ -name "*.png" -path "*/unit/*" | wc -l) screenshots" >> test-report.md
+          echo "## E2E Tests: $(find cypress/screenshots/ -name "*.png" -path "*/e2e/*" | wc -l) screenshots" >> test-report.md
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-test-report
+          path: automation/test-report.md
+          retention-days: 30

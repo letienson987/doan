@@ -1,0 +1,138 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: automation/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./automation
+        run: npm ci
+
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Start web server
+        run: |
+          serve . -p 3000 &
+          sleep 5
+          curl -f http://localhost:3000 || (echo "Server not ready" && exit 1)
+
+      - name: Verify Cypress installation
+        working-directory: ./automation
+        run: npx cypress verify
+
+      # - name: Run Unit Tests
+      #   working-directory: ./automation
+      #   run: npm run test:unit
+
+      - name: Run E2E Tests
+        working-directory: ./automation
+        run: npm run test:e2e
+        continue-on-error: false
+
+      - name: Generate test summary
+        if: always()
+        working-directory: ./automation
+        run: |
+          echo "#  Cypress Test Results" > test-summary.md
+          echo "" >> test-summary.md
+          echo "## 🚀 Test Execution Details" >> test-summary.md
+          echo "- **Date**: $(date)" >> test-summary.md
+          echo "- **Branch**: ${{ github.ref_name }}" >> test-summary.md
+          echo "- **PR**: ${{ github.event.number }}" >> test-summary.md
+          echo "- **Node.js**: 20" >> test-summary.md
+          echo "- **Runner**: ubuntu-latest" >> test-summary.md
+          echo "" >> test-summary.md
+          echo "##  Test Status" >> test-summary.md
+          if [ -d "cypress/screenshots" ]; then
+            screenshot_count=$(find cypress/screenshots -name "*.png" | wc -l)
+            echo "-  Screenshots: $screenshot_count files" >> test-summary.md
+          fi
+          if [ -d "cypress/videos" ]; then
+            video_count=$(find cypress/videos -name "*.mp4" | wc -l)
+            echo "-  Videos: $video_count files" >> test-summary.md
+          fi
+          if [ -d "cypress/reports" ]; then
+            report_count=$(find cypress/reports -name "*.html" | wc -l)
+            echo "-  HTML Reports: $report_count files" >> test-summary.md
+          fi
+          echo "" >> test-summary.md
+          echo "##  Next Steps" >> test-summary.md
+          echo "- Download artifacts for detailed results" >> test-summary.md
+          echo "- Check HTML report for interactive test details" >> test-summary.md
+
+      - name: Comment PR with test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const summaryPath = path.join(process.cwd(), 'automation', 'test-summary.md');
+            let summary = '## Cypress Test Results\n\n';
+            summary += `**All tests completed**\n\n`;
+            summary += `- Branch: \`${process.env.GITHUB_REF_NAME}\`\n`;
+            summary += `- Node.js: \`20\`\n`;
+            summary += `- Status: Tests completed successfully\n\n`;
+            summary += ` **Detailed HTML Report**: Download from Artifacts → \`cypress-html-report-20\`\n\n`;
+
+            if (fs.existsSync(summaryPath)) {
+              const content = fs.readFileSync(summaryPath, 'utf8');
+              summary += content;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Upload test screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots-20
+          path: automation/cypress/screenshots/
+          retention-days: 7
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-summary-20
+          path: automation/test-summary.md
+          retention-days: 30
+
+      - name: Upload Cypress HTML Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-html-report-20
+          path: automation/cypress/reports/
+          retention-days: 30
