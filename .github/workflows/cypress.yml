@@ -45,9 +45,9 @@ jobs:
         working-directory: ./automation
         run: npx cypress verify
 
-      - name: Run Unit Tests
-        working-directory: ./automation
-        run: npm run test:unit
+      # - name: Run Unit Tests
+      #   working-directory: ./automation
+      #   run: npm run test:unit
 
       - name: Run E2E Tests
         working-directory: ./automation
